@@ -19,9 +19,7 @@ public class MiJugador implements Jugador, IAuto {
         return "MiJugador";
     }
 
-    // ----------------------------------------------------------
-    //  MINIMAX ROOT → decide la columna final
-    // ----------------------------------------------------------
+    //El programa de momento hace un minmax sin poda alpha beta ni heuristica
     private int minimax(Tauler t, int color) {
 
         int mejorCol = -1;
@@ -47,17 +45,14 @@ public class MiJugador implements Jugador, IAuto {
         return mejorCol;
     }
 
-    // ----------------------------------------------------------
-    //  MINIMAX SIN PODA
-    // ----------------------------------------------------------
-    private int minimax(Tauler t, int profundidad, boolean maximizando, int color) {
+    //Aqui irá la poda alpha beta pero aun no está hecho
+    private int minimax(Tauler t, int profundidad, boolean max, int color) {
 
-        // CASO BASE: no quedan movimientos o profundidad 0
         if (profundidad == 0 || !t.espotmoure()) {
-            return 0;   // SIN HEURÍSTICA AÚN
+            return 0;
         }
 
-        if (maximizando) {
+        if (max) {
             int mejor = Integer.MIN_VALUE;
 
             for (int col = 0; col < t.getMida(); col++) {
@@ -67,7 +62,6 @@ public class MiJugador implements Jugador, IAuto {
                     Tauler copia = new Tauler(t);
                     copia.afegeix(col, color);
 
-                    // Victoria inmediata
                     if (copia.solucio(col, color)) {
                         return Integer.MAX_VALUE / 2;
                     }

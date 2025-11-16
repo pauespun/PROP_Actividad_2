@@ -11,7 +11,7 @@ public class MiJugador implements Jugador, IAuto {
     @Override
     public int moviment(Tauler t, int color) {
         // Llamamos al minimax root
-        return minimaxRoot(t, color);
+        return minimax(t, color);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class MiJugador implements Jugador, IAuto {
     // ----------------------------------------------------------
     //  MINIMAX ROOT → decide la columna final
     // ----------------------------------------------------------
-    private int minimaxRoot(Tauler t, int color) {
+    private int minimax(Tauler t, int color) {
 
         int mejorCol = -1;
         int mejorValor = Integer.MIN_VALUE;

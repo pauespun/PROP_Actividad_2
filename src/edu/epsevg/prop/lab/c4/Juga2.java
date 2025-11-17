@@ -369,16 +369,24 @@ public class Juga2 extends javax.swing.JFrame {
         }
 
         @Override
-        protected void done() {
+        protected void done()
+        {
             try {
-
                 jLayeredPane1.setBackground(new java.awt.Color(255, 255, 255));
                 jLayeredPane1.setEnabled(true);
-
-                mouCurrentPlayer(get());
+                int columnaMovida = get();
+                if (jugador instanceof MiJugador)
+                {
+                    long nodos = ((MiJugador) jugador).getNodosHojaExplorados();
+                    System.out.println("[" + jugador.nom() + "] Nodos hoja explorados: " + nodos);
+                }
+            mouCurrentPlayer(columnaMovida);
+                
                 repaint();
                 estaPensant = false;
-            } catch (Exception ignore) {
+            } catch (Exception ignore)
+            {
+            
             }
         }
     }

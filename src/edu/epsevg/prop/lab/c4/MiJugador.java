@@ -2,23 +2,24 @@ package edu.epsevg.prop.lab.c4;
 
 public class MiJugador implements Jugador, IAuto {
 
-    private int profunditatMax;
+    private int profundidadMaxima;
 
-    // Pesos heurísticos
-    private static final int CUATRO     = 100000;
-    private static final int TRES       = 1000;
-    private static final int DOS        = 100;
-    private static final int CUATRO_ENE = -100000;
-    private static final int TRES_ENE   = -1200;
-    private static final int DOS_ENE    = -150;
 
-    public MiJugador(int prof) {
-        this.profunditatMax = prof;
+    private static final int PUNTUACION_CUATRO     = 100000;
+    private static final int PUNTUACION_TRES       = 1000;
+    private static final int PUNTUACION_DOS        = 100;
+
+    private static final int PENAL_CUATRO_ENEMIGO  = -100000;
+    private static final int PENAL_TRES_ENEMIGO    = -1200;
+    private static final int PENAL_DOS_ENEMIGO     = -150;
+
+    public MiJugador(int profundidad) {
+        this.profundidadMaxima = profundidad;
     }
 
     @Override
-    public int moviment(Tauler t, int color) {
-        return minimaxRoot(t, color);
+    public int moviment(Tauler tablero, int colorJugador) {
+        return minimaxRaiz(tablero, colorJugador);
     }
 
     @Override
@@ -26,193 +27,214 @@ public class MiJugador implements Jugador, IAuto {
         return "MiJugador";
     }
 
-    // =============================================================
-    //  MINIMAX ROOT + ALPHA-BETA
-    // =============================================================
-    private int minimaxRoot(Tauler t, int color) {
 
-        int mejorCol = -1;
+    private int minimaxRaiz(Tauler tablero, int colorJugador) {
+
+        int mejorColumna = -1;
         int mejorValor = Integer.MIN_VALUE;
 
-        int alpha = Integer.MIN_VALUE;
+        int alfa = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
 
-        for (int col = 0; col < t.getMida(); col++) {
+        for (int columna = 0; columna < tablero.getMida(); columna++) {
 
-            if (t.movpossible(col)) {
+            if (tablero.movpossible(columna)) {
 
-                Tauler copia = new Tauler(t);
-                copia.afegeix(col, color);
+                Tauler copiaTablero = new Tauler(tablero);
+                copiaTablero.afegeix(columna, colorJugador);
 
-                // victoria inmediata
-                if (copia.solucio(col, color)) {
-                    return col;
+                if (copiaTablero.solucio(columna, colorJugador)) {
+                    return columna;
                 }
 
-                int valor = minimax(copia, profunditatMax - 1, false, -color, alpha, beta);
+                int valor = minimax(
+                        copiaTablero,
+                        profundidadMaxima - 1,
+                        false,
+                        -colorJugador,
+                        alfa,
+                        beta
+                );
 
                 if (valor > mejorValor) {
                     mejorValor = valor;
-                    mejorCol = col;
+                    mejorColumna = columna;
                 }
 
-                alpha = Math.max(alpha, valor);
+                alfa = Math.max(alfa, valor);
             }
         }
 
-        return mejorCol;
+        return mejorColumna;
     }
 
-    // =============================================================
-    //  MINIMAX + PODA ALPHA-BETA
-    // =============================================================
-    private int minimax(Tauler t, int profundidad, boolean maximizando, int color,
-                        int alpha, int beta) {
+    private int minimax(Tauler tablero, int profundidadRestante,
+                        boolean max, int colorActual,
+                        int alfa, int beta) {
 
-        // caso base
-        if (profundidad == 0 || !t.espotmoure()) {
-            return evaluarTablero(t, color);
+        if (profundidadRestante == 0 || !tablero.espotmoure()) {
+            return evaluarTablero(tablero, colorActual);
         }
 
-        if (maximizando) {
-            int mejor = Integer.MIN_VALUE;
+        if (max) {
 
-            for (int col = 0; col < t.getMida(); col++) {
+            int mejorValor = Integer.MIN_VALUE;
 
-                if (t.movpossible(col)) {
-                    Tauler copia = new Tauler(t);
-                    copia.afegeix(col, color);
+            for (int columna = 0; columna < tablero.getMida(); columna++) {
 
-                    if (copia.solucio(col, color)) {
-                        return CUATRO;  // victoria fuerte
+                if (tablero.movpossible(columna)) {
+
+                    Tauler copiaTablero = new Tauler(tablero);
+                    copiaTablero.afegeix(columna, colorActual);
+
+                    if (copiaTablero.solucio(columna, colorActual)) {
+                        return PUNTUACION_CUATRO;
                     }
 
-                    int valor = minimax(copia, profundidad - 1, false, -color, alpha, beta);
+                    int valor = minimax(
+                            copiaTablero,
+                            profundidadRestante - 1,
+                            false,
+                            -colorActual,
+                            alfa,
+                            beta
+                    );
 
-                    mejor = Math.max(mejor, valor);
-                    alpha = Math.max(alpha, mejor);
+                    mejorValor = Math.max(mejorValor, valor);
+                    alfa = Math.max(alfa, mejorValor);
 
-                    if (beta <= alpha) break;
+                    if (beta <= alfa) break;
                 }
             }
 
-            return mejor;
+            return mejorValor;
 
         } else {
-            int peor = Integer.MAX_VALUE;
 
-            for (int col = 0; col < t.getMida(); col++) {
+            int peorValor = Integer.MAX_VALUE;
 
-                if (t.movpossible(col)) {
-                    Tauler copia = new Tauler(t);
-                    copia.afegeix(col, color);
+            for (int columna = 0; columna < tablero.getMida(); columna++) {
 
-                    if (copia.solucio(col, color)) {
-                        return CUATRO_ENE;  // derrota fuerte
+                if (tablero.movpossible(columna)) {
+
+                    Tauler copiaTablero = new Tauler(tablero);
+                    copiaTablero.afegeix(columna, colorActual);
+
+                    if (copiaTablero.solucio(columna, colorActual)) {
+                        return PENAL_CUATRO_ENEMIGO;
                     }
 
-                    int valor = minimax(copia, profundidad - 1, true, -color, alpha, beta);
+                    int valor = minimax(
+                            copiaTablero,
+                            profundidadRestante - 1,
+                            true,
+                            -colorActual,
+                            alfa,
+                            beta
+                    );
 
-                    peor = Math.min(peor, valor);
-                    beta = Math.min(beta, peor);
+                    peorValor = Math.min(peorValor, valor);
+                    beta = Math.min(beta, peorValor);
 
-                    if (beta <= alpha) break;
+                    if (beta <= alfa) break;
                 }
             }
 
-            return peor;
+            return peorValor;
         }
     }
 
-    // =============================================================
-    //  HEURÍSTICA COMPLETA
-    // =============================================================
-    private int evaluarTablero(Tauler t, int color) {
-        int score = 0;
+    private int evaluarTablero(Tauler tablero, int colorJugador) {
 
-        // == 1) Priorizar columna central ==
-        int colCentral = t.getMida() / 2;
-        for (int fila = 0; fila < t.getMida(); fila++) {
-            int c = t.getColor(fila, colCentral);
-            if (c == color) score += 5;
-            else if (c == -color) score -= 5;
+        int puntuacion = 0;
+
+        int mida = tablero.getMida();
+        int columnaCentral = mida / 2;
+
+        for (int fila = 0; fila < mida; fila++) {
+            int valor = tablero.getColor(fila, columnaCentral);
+            if (valor == colorJugador) puntuacion += 5;
+            else if (valor == -colorJugador) puntuacion -= 5;
         }
 
-        // == 2) Evaluar ventanas horizontales ==
-        for (int fila = 0; fila < t.getMida(); fila++) {
-            for (int col = 0; col <= t.getMida() - 4; col++) {
+        for (int fila = 0; fila < mida; fila++) {
+            for (int columna = 0; columna <= mida - 4; columna++) {
+
                 int[] ventana = {
-                        t.getColor(fila, col),
-                        t.getColor(fila, col + 1),
-                        t.getColor(fila, col + 2),
-                        t.getColor(fila, col + 3)
+                        tablero.getColor(fila, columna),
+                        tablero.getColor(fila, columna + 1),
+                        tablero.getColor(fila, columna + 2),
+                        tablero.getColor(fila, columna + 3)
                 };
-                score += puntuarVentana(ventana, color);
+
+                puntuacion += puntuarVentana(ventana, colorJugador);
             }
         }
 
-        // == 3) Evaluar ventanas verticales ==
-        for (int col = 0; col < t.getMida(); col++) {
-            for (int fila = 0; fila <= t.getMida() - 4; fila++) {
+        for (int columna = 0; columna < mida; columna++) {
+            for (int fila = 0; fila <= mida - 4; fila++) {
+
                 int[] ventana = {
-                        t.getColor(fila, col),
-                        t.getColor(fila + 1, col),
-                        t.getColor(fila + 2, col),
-                        t.getColor(fila + 3, col)
+                        tablero.getColor(fila, columna),
+                        tablero.getColor(fila + 1, columna),
+                        tablero.getColor(fila + 2, columna),
+                        tablero.getColor(fila + 3, columna)
                 };
-                score += puntuarVentana(ventana, color);
+
+                puntuacion += puntuarVentana(ventana, colorJugador);
             }
         }
 
-        // == 4) Diagonal ↘ ==
-        for (int fila = 0; fila <= t.getMida() - 4; fila++) {
-            for (int col = 0; col <= t.getMida() - 4; col++) {
+        for (int fila = 0; fila <= mida - 4; fila++) {
+            for (int columna = 0; columna <= mida - 4; columna++) {
+
                 int[] ventana = {
-                        t.getColor(fila, col),
-                        t.getColor(fila + 1, col + 1),
-                        t.getColor(fila + 2, col + 2),
-                        t.getColor(fila + 3, col + 3)
+                        tablero.getColor(fila, columna),
+                        tablero.getColor(fila + 1, columna + 1),
+                        tablero.getColor(fila + 2, columna + 2),
+                        tablero.getColor(fila + 3, columna + 3)
                 };
-                score += puntuarVentana(ventana, color);
+
+                puntuacion += puntuarVentana(ventana, colorJugador);
             }
         }
 
-        // == 5) Diagonal ↗ ==
-        for (int fila = 3; fila < t.getMida(); fila++) {
-            for (int col = 0; col <= t.getMida() - 4; col++) {
+        for (int fila = 3; fila < mida; fila++) {
+            for (int columna = 0; columna <= mida - 4; columna++) {
+
                 int[] ventana = {
-                        t.getColor(fila, col),
-                        t.getColor(fila - 1, col + 1),
-                        t.getColor(fila - 2, col + 2),
-                        t.getColor(fila - 3, col + 3)
+                        tablero.getColor(fila, columna),
+                        tablero.getColor(fila - 1, columna + 1),
+                        tablero.getColor(fila - 2, columna + 2),
+                        tablero.getColor(fila - 3, columna + 3)
                 };
-                score += puntuarVentana(ventana, color);
+
+                puntuacion += puntuarVentana(ventana, colorJugador);
             }
         }
 
-        return score;
+        return puntuacion;
     }
 
-    // =============================================================
-    //  PUNTUACIÓN DE UNA VENTANA DE 4
-    // =============================================================
-    private int puntuarVentana(int[] ventana, int color) {
+    private int puntuarVentana(int[] ventana, int colorJugador) {
 
-        int mine = 0, opp = 0, empty = 0;
+        int propias = 0;
+        int enemigas = 0;
+        int vacias = 0;
 
-        for (int c : ventana) {
-            if (c == color) mine++;
-            else if (c == -color) opp++;
-            else empty++;
+        for (int casilla : ventana) {
+            if (casilla == colorJugador) propias++;
+            else if (casilla == -colorJugador) enemigas++;
+            else vacias++;
         }
 
-        if (mine == 4) return CUATRO;
-        if (mine == 3 && empty == 1) return TRES;
-        if (mine == 2 && empty == 2) return DOS;
+        if (propias == 4) return PUNTUACION_CUATRO;
+        if (propias == 3 && vacias == 1) return PUNTUACION_TRES;
+        if (propias == 2 && vacias == 2) return PUNTUACION_DOS;
 
-        if (opp == 4) return CUATRO_ENE;
-        if (opp == 3 && empty == 1) return TRES_ENE;
-        if (opp == 2 && empty == 2) return DOS_ENE;
+        if (enemigas == 4) return PENAL_CUATRO_ENEMIGO;
+        if (enemigas == 3 && vacias == 1) return PENAL_TRES_ENEMIGO;
+        if (enemigas == 2 && vacias == 2) return PENAL_DOS_ENEMIGO;
 
         return 0;
     }

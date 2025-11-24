@@ -1,24 +1,55 @@
 package edu.epsevg.prop.lab.c4;
 
+/**
+ * Classe MiJugador: Implementa un jugador automàtic pel joc Connect-4
+ * utilitzant l'algoritme Minimax amb poda Alpha-Beta i una heurística
+ * d'avaluació basada en finestres de 4 caselles.
+ *
+ * El jugador calcula el millor moviment explorant un nombre limitat
+ * de nivells en el tauler i retorna la millor columna per jugar.
+ *
+ * Inclou:
+ * - Minimax amb poda alpha-beta
+ * - Heurística d'avaluació del tauler
+ * - Comptador de nodes explorats
+ *
+ * @author  
+ */
 public class MiJugador implements Jugador, IAuto {
 
+    /** Profunditat màxima de cerca del minimax */
     private int profundidadMaxima;
 
-
+    /** Pesos heurístics positius (jugador) */
     private static final int PUNTUACION_CUATRO     = 100000;
     private static final int PUNTUACION_TRES       = 1000;
     private static final int PUNTUACION_DOS        = 100;
 
+    /** Penalitzacions heurístiques negatives (rival) */
     private static final int PENAL_CUATRO_ENEMIGO  = -100000;
     private static final int PENAL_TRES_ENEMIGO    = -1200;
     private static final int PENAL_DOS_ENEMIGO     = -150;
     
+    /** Comptador global de nodes explorats per Minimax */
     private long nodosExplorados = 0;
 
+    /**
+     * Constructor del jugador automàtic.
+     *
+     * @param profundidad Profunditat màxima de cerca del minimax
+     */
     public MiJugador(int profundidad) {
         this.profundidadMaxima = profundidad;
     }
-
+    
+    /**
+     * Mètode principal de decisió. Rep el tauler actual i retorna
+     * la columna òptima calculada mitjançant Minimax.
+     *
+     * @param tablero Estat actual del tauler
+     * @param colorJugador Color del jugador actual (1 o -1)
+     * @return Índex de la columna escollida
+     */
     @Override
     public int moviment(Tauler tablero, int colorJugador) {
         nodosExplorados = 0;
@@ -27,12 +58,22 @@ public class MiJugador implements Jugador, IAuto {
         return movimientoElegido;
     }
 
+    /**
+     * @return Nom del jugador
+     */
     @Override
     public String nom() {
         return "MiJugador";
     }
 
-
+    /**
+     * Aplica Minimax a la arrel (primer nivell). Recorre totes les
+     * columnes possibles i obté el millor moviment inicial.
+     *
+     * @param tablero Tauler actual
+     * @param colorJugador Color del jugador en el torn actual
+     * @return Millor columna possible
+     */
     private int minimaxRaiz(Tauler tablero, int colorJugador) {
 
         int mejorColumna = -1;
@@ -72,7 +113,18 @@ public class MiJugador implements Jugador, IAuto {
 
         return mejorColumna;
     }
-
+    
+    /**
+     * Algoritme Minimax amb poda Alpha-Beta.
+     *
+     * @param tablero Estat actual del tauler
+     * @param profundidadRestante Profunditat restant a explorar
+     * @param esMaximizador True si és torn del max (jugador)
+     * @param colorActual Color del jugador actual (1 o -1)
+     * @param alfa Valor alfa per la poda
+     * @param beta Valor beta per la poda
+     * @return Valor heurístic de la posició actual
+     */
     private int minimax(Tauler tablero, int profundidadRestante, boolean max, int colorActual, int alfa, int beta) {
         nodosExplorados++;
         if (profundidadRestante == 0 || !tablero.espotmoure()) {
@@ -146,7 +198,16 @@ public class MiJugador implements Jugador, IAuto {
             return peorValor;
         }
     }
-
+    
+    /**
+     * Avalua el tauler mitjançant una heurística basada en totes
+     * les finestres possibles de 4 caselles: horitzontals, verticals
+     * i diagonals.
+     *
+     * @param tablero Estat del tauler
+     * @param colorJugador Color del jugador avaluat
+     * @return Valor heurístic total
+     */
     private int evaluarTablero(Tauler tablero, int colorJugador) {
 
         int puntuacion = 0;
@@ -219,6 +280,17 @@ public class MiJugador implements Jugador, IAuto {
         return puntuacion;
     }
 
+    /**
+     * Avalua una finestra de 4 caselles i retorna
+     * una puntuació heurística basada en:
+     * - nombre de fitxes pròpies
+     * - nombre de fitxes enemigues
+     * - nombre de buits
+     *
+     * @param ventana Array de 4 caselles
+     * @param colorJugador Color del jugador a favor
+     * @return Valor heurístic de la finestra
+     */
     private int puntuarVentana(int[] ventana, int colorJugador) {
 
         int propias = 0;

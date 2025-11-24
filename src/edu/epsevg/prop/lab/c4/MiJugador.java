@@ -12,6 +12,8 @@ public class MiJugador implements Jugador, IAuto {
     private static final int PENAL_CUATRO_ENEMIGO  = -100000;
     private static final int PENAL_TRES_ENEMIGO    = -1200;
     private static final int PENAL_DOS_ENEMIGO     = -150;
+    
+    private long nodosExplorados = 0;
 
     public MiJugador(int profundidad) {
         this.profundidadMaxima = profundidad;
@@ -19,7 +21,10 @@ public class MiJugador implements Jugador, IAuto {
 
     @Override
     public int moviment(Tauler tablero, int colorJugador) {
-        return minimaxRaiz(tablero, colorJugador);
+        nodosExplorados = 0;
+        int movimientoElegido = minimaxRaiz(tablero, colorJugador);
+        System.out.println("Nodos explorados: " + nodosExplorados);
+        return movimientoElegido;
     }
 
     @Override
@@ -68,10 +73,8 @@ public class MiJugador implements Jugador, IAuto {
         return mejorColumna;
     }
 
-    private int minimax(Tauler tablero, int profundidadRestante,
-                        boolean max, int colorActual,
-                        int alfa, int beta) {
-
+    private int minimax(Tauler tablero, int profundidadRestante, boolean max, int colorActual, int alfa, int beta) {
+        nodosExplorados++;
         if (profundidadRestante == 0 || !tablero.espotmoure()) {
             return evaluarTablero(tablero, colorActual);
         }
